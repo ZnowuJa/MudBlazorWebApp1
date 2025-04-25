@@ -1,0 +1,79 @@
+﻿@page "/test01"
+
+
+
+@inject ApplicationDbContext _context
+
+<h3>TestSimpleTable</h3>
+
+<MudDataGrid T="BasicFormExample" Items="@entities.Take(4)" ReadOnly="@_readOnly" EditMode="@(_isCellEditMode ? DataGridEditMode.Cell : DataGridEditMode.Form)"
+StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
+Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditTrigger.OnRowClick : DataGridEditTrigger.Manual)">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="Nr" Editable="false" />
+        <PropertyColumn Property="x => x.Name" />
+        <PropertyColumn Property="x => x.Description" />
+        <PropertyColumn Property="x => x.AuthorUrl">
+            <EditTemplate>
+                <MudSelect @bind-Value="context.Item.Description" Required RequiredError="You must select a Position!!!" Margin="@Margin.Dense">
+
+                    @foreach (var state in _states)
+                    {
+                        <MudSelectItem Value="@state">@state</MudSelectItem>
+                    }
+                </MudSelect>
+            </EditTemplate>
+        </PropertyColumn>
+        <TemplateColumn Hidden="@(_isCellEditMode || _readOnly || _editTriggerRowClick)" CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+@foreach(var item in entities)
+{
+
+}
+
+@code {
+
+    // private List<BasicFormExample> entities;
+    private IEnumerable<BasicFormExample> entities = new List<BasicFormExample>();
+    private bool _readOnly = false;
+    private bool _isCellEditMode = true;
+    private List<string> _events = new();
+    private bool _editTriggerRowClick;
+    private readonly string[] _states =
+        [
+        "Alabama", "Alaska", "American Samoa", "Arizona"];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            entities =  _context.BasicFormExamples.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+        }
+        Console.WriteLine();
+    }
+    void StartedEditingItem(BasicFormExample item)
+    {
+        _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CanceledEditingItem(BasicFormExample item)
+    {
+        _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+    void CommittedItemChanges(BasicFormExample item)
+    {
+        _events.Insert(0, $"Event = CommittedItemChanges, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
+    }
+
+}
