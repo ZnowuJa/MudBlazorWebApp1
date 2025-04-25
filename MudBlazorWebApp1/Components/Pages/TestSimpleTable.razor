@@ -51,7 +51,7 @@ Bordered="true" Dense="true" EditTrigger="@(_editTriggerRowClick ? DataGridEditT
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        try 
         {
             entities =  _context.BasicFormExamples.ToList();
         }
